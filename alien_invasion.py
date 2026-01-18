@@ -1,7 +1,7 @@
 import pygame, sys
 from alien import Alien
 from player import Player
-from explosions import draw_explosion
+from explosions import Explosion
 
 
 # TODO: Add clipping at screen's edge, refctor to it's own file, add shooting, add more enemy sprites, add UI (lives, health, level number, ...), add ESC key exiting the game, add fullscreen mode and stretching the background
@@ -40,11 +40,23 @@ def run_game():
     screen = pygame.display.set_mode(screen_size[0])
     screen.fill(background)
 
-    alien = Alien(screen.get_width() / 2, screen.get_height() / 2)
-    alien_group = pygame.sprite.Group(alien)
+    screen_height = screen.get_height()
+    screen_width = screen.get_width()
+
+    # Spwawn 20 aliens to the screen
+    alien_group = pygame.sprite.Group()
+    screen_chunk = screen_width / 10
+    for i in range(0, 10):
+
+
+        new_alien_first_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 4)
+        new_alien_second_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 2)
+        alien_group.add(new_alien_first_row)
+        alien_group.add(new_alien_second_row)
+
     alien_group.draw(screen)
 
-    player = Player(screen.get_width() / 2, screen.get_height() / 4)
+    player = Player(screen.get_width() / 2, screen.get_height() * 0.75)
     player_group = pygame.sprite.Group(player)
     player_group.draw(screen)
 
@@ -53,33 +65,35 @@ def run_game():
     aliens_bullet_group = pygame.sprite.Group()
     player_shoot_timer = 0
 
+    # Create group for keeping track of explosions on the screen
+    explosions_group = pygame.sprite.Group()
+
     # Main game loop
     while True:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                print(event)
                 sys.exit()
 
         # Check and see if we moved to a new level (all aliens dead)
         # If so, load in player and appropriate batch of aliens
 
 
-
-        # Check for bullet collisions
-
-
         # Erase the old frame
         screen.fill(background)
         # player_group.clear(player.get_surface(), screen)
 
-
+        # Update explosions, if any
+        for explosion in explosions_group:
+            if not explosion.update_image():
+                explosions_group.remove(explosion)
 
 
         keys = pygame.key.get_pressed()
         current_player_rect = player.get_rect()
         
         if keys[pygame.K_ESCAPE]:
+            print(player_bullet_group)
             sys.exit()
         if keys[pygame.K_w] and player.rect.y > 0:
             player.update_rect(0, -600 * dt)
@@ -91,25 +105,26 @@ def run_game():
             player.update_rect(600 * dt, 0)
 
         if pygame.sprite.spritecollideany(player, alien_group):
-            print("Collision detected")
-            print("Current Position: x:" + str(current_player_rect.x) + "\ny: " + str(current_player_rect.y))
             player.set_rect(current_player_rect.x, current_player_rect.y)
 
         # Update bullet positions and check for collisions
         for bullet in player_bullet_group.sprites():
             bullet.update_rect()
             if pygame.sprite.spritecollideany(bullet, alien_group):
-                #TODO: Implement an Explosion class, figure out how to "animate" from small to large explosions
+                explosions_group.add(Explosion(bullet.get_rect().x - 20, bullet.get_rect().y - 20))
                 bullet.remove(player_bullet_group)
+            if bullet.get_rect().y < 0: # Bullet has left the screen
+                player_bullet_group.remove(bullet)
 
-
-        if player_shoot_timer >= 0.2 and keys[pygame.K_SPACE]:
+        #  
+        if player_shoot_timer >= 0.1 and keys[pygame.K_SPACE]:
             player_bullet_group.add(player.fire_bullet())
             player_shoot_timer = 0
 
-        # Check for player bullet strike
-                
+        
+        # Draw everything        
 
+        explosions_group.draw(screen)
         player_bullet_group.draw(screen)
         player_group.draw(screen)
         alien_group.draw(screen)
