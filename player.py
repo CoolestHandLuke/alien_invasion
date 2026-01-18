@@ -1,4 +1,5 @@
 import pygame
+from bullet import Bullet
 
 class Player(pygame.sprite.Sprite):
 
@@ -8,6 +9,10 @@ class Player(pygame.sprite.Sprite):
 
         self.image = pygame.image.load("images/Player/player_b_m.png")
         self.rect = self.image.get_rect().move(x_pos, y_pos)
+        self.width = self.rect.width
+        self.height = self.rect.height
+        self.time_since_last_shot = 0
+        self.bullet_image = pygame.image.load("images/FX/vulcan_1.png")
 
     def get_surface(self):
         return self.image
@@ -21,3 +26,6 @@ class Player(pygame.sprite.Sprite):
 
     def update_rect(self, dx, dy):
         self.rect = self.rect.move(dx, dy)
+
+    def fire_bullet(self):
+        return Bullet("images/FX/vulcan_1.png", self.rect.x + self.width / 2 - 4, self.rect.y, 0, 50, -1)
