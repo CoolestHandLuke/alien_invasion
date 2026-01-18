@@ -46,11 +46,11 @@ def run_game():
     # Spwawn 20 aliens to the screen
     alien_group = pygame.sprite.Group()
     screen_chunk = screen_width / 10
-    for i in range(0, 10):
-
-
-        new_alien_first_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 4)
-        new_alien_second_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 2)
+    RIGHT = 1
+    LEFT = -1
+    for i in range(0, 5):
+        new_alien_first_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 4, RIGHT)
+        new_alien_second_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 2, LEFT)
         alien_group.add(new_alien_first_row)
         alien_group.add(new_alien_second_row)
 
@@ -76,6 +76,7 @@ def run_game():
                 sys.exit()
 
         # Check and see if we moved to a new level (all aliens dead)
+
         # If so, load in player and appropriate batch of aliens
 
 
@@ -93,7 +94,6 @@ def run_game():
         current_player_rect = player.get_rect()
         
         if keys[pygame.K_ESCAPE]:
-            print(player_bullet_group)
             sys.exit()
         if keys[pygame.K_w] and player.rect.y > 0:
             player.update_rect(0, -600 * dt)
@@ -107,11 +107,17 @@ def run_game():
         if pygame.sprite.spritecollideany(player, alien_group):
             player.set_rect(current_player_rect.x, current_player_rect.y)
 
+        # Update the positions of aliens. Check for clipping and make them move the other direction if they hit the screen edge. 
+        for alien in alien_group.sprites():
+            alien.move()
+
         # Update bullet positions and check for collisions
         for bullet in player_bullet_group.sprites():
             bullet.update_rect()
-            if pygame.sprite.spritecollideany(bullet, alien_group):
-                explosions_group.add(Explosion(bullet.get_rect().x - 20, bullet.get_rect().y - 20))
+            struck_alien = pygame.sprite.spritecollideany(bullet, alien_group)
+            if struck_alien:
+                struck_alien.update_health(bullet.get_damage())
+                explosions_group.add(Explosion(bullet.get_rect().x - 20, bullet.get_rect().y - 30))
                 bullet.remove(player_bullet_group)
             if bullet.get_rect().y < 0: # Bullet has left the screen
                 player_bullet_group.remove(bullet)
@@ -124,10 +130,15 @@ def run_game():
         
         # Draw everything        
 
-        explosions_group.draw(screen)
         player_bullet_group.draw(screen)
         player_group.draw(screen)
         alien_group.draw(screen)
+        explosions_group.draw(screen)
+
+        # Check for victory. SHOULD THIS BE SOMEWHERE ELSE? 
+        if len(alien_group.sprites()) == 0:
+            you_win = pygame.font.Font("PublicPixel.ttf", size=200).render("YOU WIN", False, (0, 0, 0), (255, 255, 255))
+            screen.blit(you_win, (screen_width / 2 - you_win.get_width() / 2, screen_height / 2 - you_win.get_height() / 2), )
         pygame.display.flip()
         dt = clock.tick(60) / 1000
         player_shoot_timer += dt

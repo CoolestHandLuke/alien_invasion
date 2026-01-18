@@ -12,7 +12,8 @@ class Player(pygame.sprite.Sprite):
         self.width = self.rect.width
         self.height = self.rect.height
         self.time_since_last_shot = 0
-        self.bullet_image = pygame.image.load("images/FX/vulcan_1.png")
+        self.bullet_name = 'plasma'
+        self.bullet_size = "01"
 
     def get_surface(self):
         return self.image
@@ -27,5 +28,9 @@ class Player(pygame.sprite.Sprite):
     def update_rect(self, dx, dy):
         self.rect = self.rect.move(dx, dy)
 
+    def set_bullet_type(self, type):
+        self.bullet_type = type
+
     def fire_bullet(self):
-        return Bullet("images/FX/vulcan_1.png", self.rect.x + self.width / 2 - 4, self.rect.y, 0, 50, -1)
+        image_name = "images/FX/" + self.bullet_name + self.bullet_size + ".png"
+        return Bullet(image_name, self.rect.x + self.width / 2 - 4, self.rect.y, 0, 50, -1)
