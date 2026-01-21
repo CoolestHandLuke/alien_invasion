@@ -3,16 +3,16 @@ import pygame
 class Alien(pygame.sprite.Sprite):
 
 
-    def __init__(self, x_pos, y_pos, move_direction):
+    def __init__(self, alien_type, x_pos, y_pos, move_direction):
 
         pygame.sprite.Sprite.__init__(self)
 
 
-        self.image = pygame.image.load("images/Aliens/enemy_1_r_m.png")
+        self.image = pygame.image.load(alien_type["image"])
         self.rect = self.image.get_rect().move(x_pos, y_pos)
-        self.speed = 8
+        self.speed = alien_type["speed"]
         self.direction = move_direction
-        self.health = 100
+        self.health = alien_type["health"]
 
     def update_health(self, damage):
         self.health -= damage

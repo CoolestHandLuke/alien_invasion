@@ -2,6 +2,7 @@ import pygame, sys
 from alien import Alien
 from player import Player
 from explosions import Explosion
+import json
 
 
 # TODO: Add clipping at screen's edge, refctor to it's own file, add shooting, add more enemy sprites, add UI (lives, health, level number, ...), add ESC key exiting the game, add fullscreen mode and stretching the background
@@ -45,16 +46,15 @@ def run_game():
 
     # Spwawn 20 aliens to the screen
     alien_group = pygame.sprite.Group()
-    screen_chunk = screen_width / 10
+    SCREEN_CHUNK = screen_width / 10
     RIGHT = 1
     LEFT = -1
-    for i in range(0, 5):
-        new_alien_first_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 4, RIGHT)
-        new_alien_second_row = Alien(i * screen_chunk + screen_chunk, screen.get_height() / 2, LEFT)
-        alien_group.add(new_alien_first_row)
-        alien_group.add(new_alien_second_row)
-
-    alien_group.draw(screen)
+    level_tracker = 0
+    level_nums = ["level_1", "level_2", "level_3"]
+    current_level = "level_1"
+    with open("alien_types.json", 'r') as file:
+        data = json.load(file)
+    
 
     player = Player(screen.get_width() / 2, screen.get_height() * 0.75)
     player_group = pygame.sprite.Group(player)
@@ -68,6 +68,10 @@ def run_game():
     # Create group for keeping track of explosions on the screen
     explosions_group = pygame.sprite.Group()
 
+
+
+    new_level = True
+
     # Main game loop
     while True:
 
@@ -77,7 +81,17 @@ def run_game():
 
         # Check and see if we moved to a new level (all aliens dead)
 
+
         # If so, load in player and appropriate batch of aliens
+        if new_level and current_level:
+            for i in range(0, 5):
+                    new_alien_first_row = Alien(data[current_level], i * SCREEN_CHUNK + SCREEN_CHUNK, screen.get_height() / 4, RIGHT)
+                    new_alien_second_row = Alien(data[current_level], i * SCREEN_CHUNK + SCREEN_CHUNK, screen.get_height() / 2, LEFT)
+                    alien_group.add(new_alien_first_row)
+                    alien_group.add(new_alien_second_row)
+
+            alien_group.draw(screen)
+            new_level = False
 
 
         # Erase the old frame
@@ -136,9 +150,16 @@ def run_game():
         explosions_group.draw(screen)
 
         # Check for victory. SHOULD THIS BE SOMEWHERE ELSE? 
-        if len(alien_group.sprites()) == 0:
+        if len(alien_group.sprites()) == 0 and current_level == "level_3":
             you_win = pygame.font.Font("PublicPixel.ttf", size=200).render("YOU WIN", False, (0, 0, 0), (255, 255, 255))
             screen.blit(you_win, (screen_width / 2 - you_win.get_width() / 2, screen_height / 2 - you_win.get_height() / 2), )
+        elif len(alien_group.sprites()) == 0:
+            new_level = True
+            level_tracker += 1
+            current_level = level_nums[level_tracker]
+
+        level_indicator = pygame.font.Font("PublicPixel.ttf", size=40).render(current_level.upper(), False, (0, 0, 0), (255, 255, 255))
+        screen.blit(level_indicator, (level_indicator.get_width() / 4, level_indicator.get_height() / 2), )
         pygame.display.flip()
         dt = clock.tick(60) / 1000
         player_shoot_timer += dt

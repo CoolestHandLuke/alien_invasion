@@ -1,0 +1,19 @@
+{
+    "level_1": {
+        "image": "images/Aliens/enemy_1_r_m.png",
+        "speed": 8,
+        "health": 100
+    },
+
+    "level_2": {
+        "image": "images/Aliens/enemy_1_g_m.png",
+        "speed": 10,
+        "health": 125
+    },
+
+    "level_3": {
+        "image": "images/Aliens/enemy_1_b_m.png",
+        "speed": 15,
+        "health": 150
+    }
+}
