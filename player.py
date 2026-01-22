@@ -40,6 +40,9 @@ class Player(pygame.sprite.Sprite):
     def update_rect(self, dx, dy):
         self.rect = self.rect.move(dx, dy)
 
+    def get_height(self):
+        return self.rect.height
+
     def set_bullet_type(self, type):
         self.bullet_type = type
 

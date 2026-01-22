@@ -1,6 +1,7 @@
 import pygame, sys
 from alien import Alien
 from player import Player
+from exhaust import Exhaust
 from explosions import Explosion
 import json
 
@@ -45,9 +46,10 @@ def run_game():
         data = json.load(file)
     
 
-    #Create the player sprite and put it in to a Group for ease of QOL purposes
+    #Create the player and exhaust sprites and put it in to a Group for ease of QOL purposes
     player = Player(screen.get_width() / 2, screen.get_height() * 0.75)
-    player_group = pygame.sprite.Group(player)
+    exhaust = Exhaust(player.get_rect().x, player.get_rect().y + player.get_height() / 3)
+    player_group = pygame.sprite.Group(exhaust, player)
     player_group.draw(screen)
 
     # Create Groups to keep track of bullets on the screen
@@ -121,6 +123,9 @@ def run_game():
             player.set_image(RIGHT, PLAYER_IDLE)
 
         PLAYER_IDLE = True
+
+        # Update the exhaust sprite
+        exhaust.set_image()
 
         if pygame.sprite.spritecollideany(player, alien_group):
             player.set_rect(current_player_rect.x, current_player_rect.y)
