@@ -5,23 +5,15 @@ from explosions import Explosion
 import json
 
 
-# TODO: Add clipping at screen's edge, refctor to it's own file, add shooting, add more enemy sprites, add UI (lives, health, level number, ...), add ESC key exiting the game, add fullscreen mode and stretching the background
-# Bullet can be it's own object. attributes of size, speed, color, damage (for later). Spawn one on spacebar push, add to a list that tracks it, blit it to the screen, update on every loop.
-# Figure out if bullets are sprites too. Figure out how to clip at the screen's edge. Refactor your code in to functions and abstract it away to different files. Write out a wireframe of how the main game loop is supposed to run. Model your code after this diagram. ORGANIZE AND MAKE IT LOOK NEAT. 
+# TODO:add UI (lives, health, ), add hotkey to change the bullets
+# Add in death from touching aliens. Add in alien shooting. Balance damage and speed. Add lives and lose condition.
+# Add different explosions. Put them away in to a json file. Add powerups to different bullets (change size, damage, explosions). Add a death animation (explosions). 
+# Add exhaust to the ship
+# Add button to start a new game. 
+# CLEAN UP YOUR DAMN COMMENTS.
+# Make it PEP8 standardized. 
+# There's a lot to do here. But the process is fun. And that's why I do it :)
 
-
-# Alright. Start from scratch and build this the right way. 
-# - Everything is a Sprite: player, aliens, bullets (for now, that's it)
-# - player should be it's own class inheriting from Sprte. Addition atrributes: Health, Lives, move speed, firerate, damage/shot, shields, armor, what else?
-# - bullets will be their own class. Additonal attributes are: Size, damage, speed, color?
-# - aliens will be their own class. Additonal atrributes are: Health, move speed, color, projectil type, damage/shot, more here?
-# - Collision detection between sprites, walls
-# - Fullscreen option needs to be implemented right away
-# - Scrolling background? Multiple backgrounds?
-# - Optimize framerate, smoothness, and controls. 
-# Here we go. 
-
-# This is fun
 def run_game():
 
 
@@ -30,9 +22,6 @@ def run_game():
     pygame.display.set_caption("Alien Invasion")
     clock = pygame.time.Clock()
     dt = 0
-
-    # Load assets
-    # background = pygame.image.load("images/background.jpg")
 
     # Draw the screen
     #TODO: Figure out how to import an image and blit it to the entire background to fit. I don't know if pygame can do it, I might need another module.
@@ -44,7 +33,7 @@ def run_game():
     screen_height = screen.get_height()
     screen_width = screen.get_width()
 
-    # Spwawn 20 aliens to the screen
+    # Create the group to hold the aliens, and load in the JSON holding alien information
     alien_group = pygame.sprite.Group()
     SCREEN_CHUNK = screen_width / 10
     RIGHT = 1
@@ -56,21 +45,22 @@ def run_game():
         data = json.load(file)
     
 
+    #Create the player sprite and put it in to a Group for ease of QOL purposes
     player = Player(screen.get_width() / 2, screen.get_height() * 0.75)
     player_group = pygame.sprite.Group(player)
     player_group.draw(screen)
 
     # Create Groups to keep track of bullets on the screen
     player_bullet_group = pygame.sprite.Group() 
-    aliens_bullet_group = pygame.sprite.Group()
+    aliens_bullet_group = pygame.sprite.Group()  # TODO Add in aliens shooting back.
     player_shoot_timer = 0
 
     # Create group for keeping track of explosions on the screen
     explosions_group = pygame.sprite.Group()
 
-
-
     new_level = True
+    PLAYER_IDLE = True
+    LAST_MOVEMENT = None
 
     # Main game loop
     while True:
@@ -111,12 +101,26 @@ def run_game():
             sys.exit()
         if keys[pygame.K_w] and player.rect.y > 0:
             player.update_rect(0, -600 * dt)
-        if keys[pygame.K_s] and player.rect.y + player.get_rect().height < screen.get_height():
+        elif keys[pygame.K_s] and player.rect.y + player.get_rect().height < screen.get_height():
             player.update_rect(0, 600 * dt)
         if keys[pygame.K_a] and player.rect.x > 0:
             player.update_rect(-600 * dt , 0)
-        if keys[pygame.K_d] and player.rect.x + player.get_rect().width < screen.get_width():
+            PLAYER_IDLE = False
+            player.set_image(LEFT, PLAYER_IDLE)
+            LAST_MOVEMENT = LEFT
+        elif keys[pygame.K_d] and player.rect.x + player.get_rect().width < screen.get_width():
             player.update_rect(600 * dt, 0)
+            PLAYER_IDLE = False
+            player.set_image(RIGHT, PLAYER_IDLE)
+            LAST_MOVEMENT = RIGHT
+
+        if PLAYER_IDLE and LAST_MOVEMENT == RIGHT:
+            player.set_image(LEFT, PLAYER_IDLE)
+
+        elif PLAYER_IDLE and LAST_MOVEMENT == LEFT:
+            player.set_image(RIGHT, PLAYER_IDLE)
+
+        PLAYER_IDLE = True
 
         if pygame.sprite.spritecollideany(player, alien_group):
             player.set_rect(current_player_rect.x, current_player_rect.y)
@@ -137,7 +141,7 @@ def run_game():
                 player_bullet_group.remove(bullet)
 
         #  
-        if player_shoot_timer >= 0.1 and keys[pygame.K_SPACE]:
+        if keys[pygame.K_SPACE] and player_shoot_timer > player.get_shooting_speed():
             player_bullet_group.add(player.fire_bullet())
             player_shoot_timer = 0
 
