@@ -13,6 +13,8 @@ class Exhaust(pygame.sprite.Sprite):
 
     def set_image(self):
         self.image = pygame.image.load("images/FX/" + self.image_options[random.randint(0, self.image_options_length - 1)])
-        # TODO: Updat the location with the rect.
+    
+    def update_rect(self, dx, dy):
+        self.rect = self.rect.move(dx, dy)
     
 

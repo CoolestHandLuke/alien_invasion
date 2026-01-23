@@ -15,6 +15,8 @@ import json
 # Make it PEP8 standardized. 
 # There's a lot to do here. But the process is fun. And that's why I do it :)
 
+#TODO: The way I've implememted the exhuast is buggy. It can move free of the ship if I run in to an enemy. The exhaust should live with the ship data, I think. This needs to be re-done. 
+
 def run_game():
 
 
@@ -48,7 +50,7 @@ def run_game():
 
     #Create the player and exhaust sprites and put it in to a Group for ease of QOL purposes
     player = Player(screen.get_width() / 2, screen.get_height() * 0.75)
-    exhaust = Exhaust(player.get_rect().x, player.get_rect().y + player.get_height() / 3)
+    exhaust = Exhaust(player.get_rect().x - player.width / 2 - 5, player.get_rect().y)
     player_group = pygame.sprite.Group(exhaust, player)
     player_group.draw(screen)
 
@@ -103,15 +105,19 @@ def run_game():
             sys.exit()
         if keys[pygame.K_w] and player.rect.y > 0:
             player.update_rect(0, -600 * dt)
+            exhaust.update_rect(0, -600 * dt)
         elif keys[pygame.K_s] and player.rect.y + player.get_rect().height < screen.get_height():
             player.update_rect(0, 600 * dt)
+            exhaust.update_rect(0, 600 * dt)
         if keys[pygame.K_a] and player.rect.x > 0:
             player.update_rect(-600 * dt , 0)
+            exhaust.update_rect(-600 * dt , 0)
             PLAYER_IDLE = False
             player.set_image(LEFT, PLAYER_IDLE)
             LAST_MOVEMENT = LEFT
         elif keys[pygame.K_d] and player.rect.x + player.get_rect().width < screen.get_width():
             player.update_rect(600 * dt, 0)
+            exhaust.update_rect(600 * dt, 0)
             PLAYER_IDLE = False
             player.set_image(RIGHT, PLAYER_IDLE)
             LAST_MOVEMENT = RIGHT
