@@ -4,16 +4,15 @@ from player import Player
 from exhaust import Exhaust
 from explosions import Explosion
 import json
+import time
 
 
 # TODO:add UI (lives, health, ), add hotkey to change the bullets
-# Add in death from touching aliens. Add in alien shooting. Balance damage and speed. Add lives and lose condition.
-# Add different explosions. Put them away in to a json file. Add powerups to different bullets (change size, damage, explosions). Add a death animation (explosions). 
-# Add exhaust to the ship
+# Add in death from touching aliens. Add lives and lose condition.
 # Add button to start a new game. 
 # CLEAN UP YOUR DAMN COMMENTS.
 # Make it PEP8 standardized. 
-# There's a lot to do here. But the process is fun. And that's why I do it :)
+# I'm tired of this project. Finish it and move on to something else.
 
 #TODO: The way I've implememted the exhuast is buggy. It can move free of the ship if I run in to an enemy. The exhaust should live with the ship data, I think. This needs to be re-done. 
 
@@ -65,6 +64,7 @@ def run_game():
     new_level = True
     PLAYER_IDLE = True
     LAST_MOVEMENT = None
+    DEAD = False
 
     # Main game loop
     while True:
@@ -133,12 +133,13 @@ def run_game():
         # Update the exhaust sprite
         exhaust.set_image()
 
-        if pygame.sprite.spritecollideany(player, alien_group):
-            player.set_rect(current_player_rect.x, current_player_rect.y)
-
         # Update the positions of aliens. Check for clipping and make them move the other direction if they hit the screen edge. 
         for alien in alien_group.sprites():
             alien.move()
+
+        # Check for collision death
+        if pygame.sprite.spritecollideany(player, alien_group):
+            DEAD = True
 
         # Update bullet positions and check for collisions
         for bullet in player_bullet_group.sprites():
@@ -164,6 +165,11 @@ def run_game():
         alien_group.draw(screen)
         explosions_group.draw(screen)
 
+        # Check for Death
+        if DEAD:
+            you_lose = pygame.font.Font("PublicPixel.ttf", size=200).render("YOU LOSE", False, (0, 0, 0), (255, 255, 255))
+            screen.blit(you_lose, (screen_width / 2 - you_lose.get_width() / 2, screen_height / 2 - you_lose.get_height() / 2), )
+
         # Check for victory. SHOULD THIS BE SOMEWHERE ELSE? 
         if len(alien_group.sprites()) == 0 and current_level == "level_3":
             you_win = pygame.font.Font("PublicPixel.ttf", size=200).render("YOU WIN", False, (0, 0, 0), (255, 255, 255))
@@ -176,7 +182,12 @@ def run_game():
         level_indicator = pygame.font.Font("PublicPixel.ttf", size=40).render(current_level.upper(), False, (0, 0, 0), (255, 255, 255))
         screen.blit(level_indicator, (level_indicator.get_width() / 4, level_indicator.get_height() / 2), )
         pygame.display.flip()
+        if DEAD:
+            break
         dt = clock.tick(60) / 1000
         player_shoot_timer += dt
+
+
+    time.sleep(5)
 
 run_game()

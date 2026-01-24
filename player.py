@@ -14,6 +14,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(x_pos, y_pos)
         self.width = self.rect.width
         self.height = self.rect.height
+        self.lives = 3
         self.time_since_last_shot = 0
         self.bullet_name = 'plasma'
         self.bullet_size = "01"
